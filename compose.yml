@@ -1,0 +1,58 @@
+version: "3.8"
+
+networks:
+  backend: {}
+
+services:
+  traefik:
+    image: traefik:v3.1
+    command:
+      # エントリポイント
+      - "--entrypoints.web.address=:80"
+      # Dockerプロバイダ
+      - "--providers.docker=true"
+      # ダッシュボード（外部公開しない）
+      - "--api.dashboard=true"
+      # アクセスログを見たいときは有効化
+      # - "--accesslog=true"
+    ports:
+      - "80:80"
+      # ダッシュボード確認用に一時的に開けたいなら下を追加（本番はNG）
+      # - "8080:8080"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+    networks:
+      - backend
+    restart: unless-stopped
+
+  home:
+    build: ./home
+    labels:
+      - "traefik.enable=true"
+      # /group1/home または /group1/home/ 以下にマッチ
+      - "traefik.http.routers.home.rule=PathPrefix(`/group1/home`)"
+      - "traefik.http.routers.home.entrypoints=web"
+      # /group1/home を剥がしてバックエンドへ渡す
+      - "traefik.http.middlewares.home-strip.stripprefix.prefixes=/group1/home"
+      - "traefik.http.routers.home.middlewares=home-strip@docker"
+      # Apacheの公開ポート
+      - "traefik.http.services.home.loadbalancer.server.port=80"
+    networks:
+      - backend
+    restart: unless-stopped
+
+  app:
+    build: ./app
+    labels:
+      - "traefik.enable=true"
+      # /group1/app または /group1/app/ 以下にマッチ
+      - "traefik.http.routers.app.rule=PathPrefix(`/group1/app`)"
+      - "traefik.http.routers.app.entrypoints=web"
+      # /group1/app を剥がす
+      - "traefik.http.middlewares.app-strip.stripprefix.prefixes=/group1/app"
+      - "traefik.http.routers.app.middlewares=app-strip@docker"
+      # Flask の公開ポート
+      - "traefik.http.services.app.loadbalancer.server.port=5000"
+    networks:
+      - backend
+    restart: unless-stopped

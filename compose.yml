@@ -30,10 +30,10 @@ services:
     labels:
       - "traefik.enable=true"
       # /group1/home または /group1/home/ 以下にマッチ
-      - "traefik.http.routers.home.rule=PathPrefix(`/group1/home`)"
+      - "traefik.http.routers.home.rule=PathPrefix(`/home`)"
       - "traefik.http.routers.home.entrypoints=web"
       # /group1/home を剥がしてバックエンドへ渡す
-      - "traefik.http.middlewares.home-strip.stripprefix.prefixes=/group1/home"
+      - "traefik.http.middlewares.home-strip.stripprefix.prefixes=/home"
       - "traefik.http.routers.home.middlewares=home-strip@docker"
       # Apacheの公開ポート
       - "traefik.http.services.home.loadbalancer.server.port=80"
@@ -46,10 +46,10 @@ services:
     labels:
       - "traefik.enable=true"
       # /group1/app または /group1/app/ 以下にマッチ
-      - "traefik.http.routers.app.rule=PathPrefix(`/group1/app`)"
+      - "traefik.http.routers.app.rule=PathPrefix(`/app`)"
       - "traefik.http.routers.app.entrypoints=web"
       # /group1/app を剥がす
-      - "traefik.http.middlewares.app-strip.stripprefix.prefixes=/group1/app"
+      - "traefik.http.middlewares.app-strip.stripprefix.prefixes=/app"
       - "traefik.http.routers.app.middlewares=app-strip@docker"
       # Flask の公開ポート
       - "traefik.http.services.app.loadbalancer.server.port=5000"

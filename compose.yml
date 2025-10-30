@@ -27,6 +27,8 @@ services:
 
   home:
     build: ./home
+    volumes:
+      - ./home/public:/usr/local/apache2/htdocs/
     labels:
       - "traefik.enable=true"
       # /group1/home または /group1/home/ 以下にマッチ
@@ -43,6 +45,8 @@ services:
 
   app:
     build: ./app
+    volumes:
+      - ./app/src:/app
     labels:
       - "traefik.enable=true"
       # /group1/app または /group1/app/ 以下にマッチ
